@@ -12,7 +12,7 @@
  */
 
 const CORSHEADERS = {
-	'Access-Control-Allow-Origin': process.env.CORS_DOMAIN,
+	'Access-Control-Allow-Origin': process.env.CORS_DOMAIN || '127.0.0.1:8787',
 	'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 	'Access-Control-Allow-Headers': 'Content-Type',
 	Vary: 'Origin',
@@ -104,7 +104,23 @@ export default {
 				const { url: longUrl } = JSON.parse(body);
 
 				// 短縮前のURLを検証(RFC3986チェック)
-				const urlCond = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+				const urlCond = new RegExp(
+					'^' +
+						'(?:https?):' + // scheme
+						'(?:\\/\\/(?:' +
+						"(?:[A-Za-z0-9\\-._~%!$&'()*+,;=:]+@)?" + // userinfo
+						'(?:' +
+						'\\[[A-Fa-f0-9:.]+\\]' + // IPv6
+						'|' +
+						'(?:[A-Za-z0-9\\-._~%]+)' + // host (reg-name / IPv4簡略)
+						')' +
+						'(?::\\d+)?' + // port
+						')?)?' +
+						"(?:\\/[A-Za-z0-9\\-._~%!$&'()*+,;=:@/]*)*" + // path
+						"(?:\\?[A-Za-z0-9\\-._~%!$&'()*+,;=:@/?]*)?" + // query
+						"(?:\\#[A-Za-z0-9\\-._~%!$&'()*+,;=:@/?]*)?" + // fragment
+						'$',
+				);
 				if (!urlCond.test(longUrl)) {
 					throw new Error('無効なURLです。');
 				}
