@@ -69,7 +69,7 @@ async function generateShortUrl(KV: KVNamespace): Promise<string> {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const origin = request.headers.get('Origin');
+		const origin = new URL(request.headers.get('Origin') || '');
 		const method: string = request.method;
 		const url: URL = new URL(request.url);
 		const body: string = await request.text();
@@ -83,7 +83,7 @@ export default {
 		}
 
 		// リクエストのオリジンを検証
-		if (origin && !origin.endsWith(CORSHEADERS['Access-Control-Allow-Origin'])) {
+		if (origin && origin.host !== CORSHEADERS['Access-Control-Allow-Origin']) {
 			return new Response('{"statusCode": 403, "error": "オリジン検証エラー"}', {
 				status: 403,
 				headers: {
