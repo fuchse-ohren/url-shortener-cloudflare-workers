@@ -112,10 +112,10 @@ export default {
 						},
 					});
 				} else {
-					return new Response('{"statusCode": 404, "error": "Not Found"}', {
+					return new Response(null, {
 						status: 404,
 						headers: {
-							'Content-Type': 'application/json',
+							'Content-Type': 'text/plain',
 						},
 					});
 				}
