@@ -94,39 +94,26 @@ npx wrangler deploy
 
 ### 1) URL を短縮する
 
-エンドポイント:
+ブラウザから`WORKER_URL`にアクセスします。
 
-- `POST /api/shorten`
-- `Content-Type: application/json`
-- Body: `{"url":"https://example.com"}`
+URL入力欄に短縮したいURLを入力して「URL短縮」ボタンを押してください。
 
-例:
+短縮後のURLとQRコードが生成されます。
 
-```bash
-curl -X POST "${WORKER_URL}/api/shorten" \
-  -H "Content-Type: application/json" \
-  -d '{"url":"https://example.com"}'
-```
+---
 
-成功時レスポンス例:
+もしくは、`https://<worker-name>.<subdomain>.workers.dev/#https%3A%2F%2Fexample.com`のように、
+ハッシュにURLを含めた`WORKER_URL`にアクセスします。
 
-```json
-{"statusCode": 200, "shortUrl": "https://<worker-domain>/Ab12Cd"}
-```
+即時短縮URLとQRコードが生成されます。
+
 
 ### 2) 短縮 URL にアクセスしてリダイレクト
 
-発行された `shortUrl` にブラウザまたは `curl -I` でアクセスします。
-
-```bash
-curl -I "${WORKER_URL}/Ab12Cd"
-```
-
-`302` と `Location` ヘッダーで元 URL にリダイレクトされます。
+発行された `shortUrl` にアクセスすると元 URL にリダイレクトされます。
 
 ## 補足
 
 - CORS プリフライト (`OPTIONS`) に対応しています。
 - 存在しない短縮キーは `404` を返します。
 - 不正な入力や未定義パスは `400` を返します。
-
