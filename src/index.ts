@@ -69,7 +69,7 @@ async function generateShortUrl(KV: KVNamespace): Promise<string> {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const origin = new URL(request.headers.get('Origin') || '');
+		const origin = new URL(request.headers.get('Origin') || request.headers.get('Host') || 'http://127.0.0.1:8787');
 		const method: string = request.method;
 		const url: URL = new URL(request.url);
 		const body: string = await request.text();
