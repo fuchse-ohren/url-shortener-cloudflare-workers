@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "url-shortener-cloudflare-workers",
+	"name": "shorten",
 	"main": "src/index.ts",
 	"assets": {
 		"directory": "./src/ui",
