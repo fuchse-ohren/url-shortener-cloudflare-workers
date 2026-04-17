@@ -83,7 +83,7 @@ export default {
 		}
 
 		// リクエストのオリジンを検証
-		if (origin && origin !== CORSHEADERS['Access-Control-Allow-Origin']) {
+		if (origin && !origin.endsWith(CORSHEADERS['Access-Control-Allow-Origin'])) {
 			return new Response('{"statusCode": 403, "error": "オリジン検証エラー"}', {
 				status: 403,
 				headers: {
