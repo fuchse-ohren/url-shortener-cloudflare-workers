@@ -11,8 +11,125 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+function returnError(e: unknown) {
+	var eMessage: string = '';
+
+	if (e instanceof Error) {
+		eMessage = e.message;
+	} else {
+		eMessage = 'エラーが発生しました';
+	}
+
+	return new Response(`{"statusCode": 400, "error": "${eMessage}"}`, {
+		status: 400,
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	});
+}
+
+function generateShortUrlKouho(): string {
+	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	let result = '';
+	for (let i = 0; i < 6; i++) {
+		result += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+
+	return result;
+}
+
+async function generateShortUrl(KV: KVNamespace): Promise<string> {
+	var result: string = '';
+	var retryLimit = 3;
+
+	// 衝突しない短縮文字列を探索
+	while (1 && retryLimit > 0) {
+		retryLimit -= 1;
+		const shortUrl = generateShortUrlKouho();
+		if (!(await KV.get(shortUrl))) {
+			result = shortUrl;
+			break;
+		}
+	}
+
+	// 衝突回数が上限に達した場合、エラーを投げる
+	if (retryLimit === 0) {
+		throw new Error('短縮URLの生成に失敗しました。\\n衝突エラー');
+	}
+
+	return result;
+}
+
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response("Hello World!");
+		const method: string = request.method;
+		const url: URL = new URL(request.url);
+		const body: string = await request.text();
+
+		/*
+		  短縮URL生成
+		    メソッド: POST
+		   	パス: /api/shorten
+			  Content-Type: application/json
+			  ボディ: url=https://example.com
+		*/
+		if (method === 'POST' && url.pathname === '/api/shorten' && request.headers.get('Content-Type') === 'application/json') {
+			try {
+				const { url: longUrl } = JSON.parse(body);
+
+				// 短縮URLを生成
+				const shortUrl = await generateShortUrl(env.KV);
+				await env.KV.put(shortUrl, longUrl);
+
+				// 短縮URLを返す
+				return new Response(`{"statusCode": 200, "shortUrl": "${url.origin}/${shortUrl}"}`, {
+					status: 200,
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+			} catch (e) {
+				return returnError(e);
+			}
+		}
+
+		/*
+		  短縮URLリダイレクト
+				メソッド: GET
+				パス: /<任意> (ルートを除く)
+		 */
+		let redirectPathCond = /^\/[^\/]+\/?$/; //1階層のパラメタかつルートを除く正規表現
+		if (method === 'GET' && redirectPathCond.test(url.pathname)) {
+			try {
+				const shortUrl = url.pathname.slice(1);
+				const longUrl = await env.KV.get(shortUrl);
+
+				if (longUrl) {
+					return new Response(null, {
+						status: 302,
+						headers: {
+							Location: longUrl,
+						},
+					});
+				} else {
+					return new Response('{"statusCode": 404, "error": "Not Found"}', {
+						status: 404,
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					});
+				}
+			} catch (e) {
+				return returnError(e);
+			}
+		}
+
+		// どのAPIリクエストにも合致しなかった場合
+		return new Response('{"statusCode": 400, "error": "Bad Request"}', {
+			status: 400,
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
 	},
 } satisfies ExportedHandler<Env>;

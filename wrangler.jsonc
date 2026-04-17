@@ -6,14 +6,16 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "url-shortener-cloudflare-workers",
 	"main": "src/index.ts",
+	"assets": {
+		"directory": "./src/ui",
+	},
 	"compatibility_date": "2026-04-17",
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
 	"upload_source_maps": true,
-	"compatibility_flags": [
-		"nodejs_compat"
-	]
+	"compatibility_flags": ["nodejs_compat"],
+	"kv_namespaces": [{ "binding": "KV", "id": "3de0a605-486a-494f-96d1-c319f974317c" }],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
