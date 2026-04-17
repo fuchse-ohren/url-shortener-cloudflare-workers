@@ -12,7 +12,7 @@
  */
 
 const CORSHEADERS = {
-	'Access-Control-Allow-Origin': 's.lunatic.red',
+	'Access-Control-Allow-Origin': CORS_DOMAIN,
 	'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 	'Access-Control-Allow-Headers': 'Content-Type',
 	Vary: 'Origin',
