@@ -1,0 +1,89 @@
+import { Controls, Description, Meta, Primary, Source, Stories, Subtitle, Title, Unstyled } from "@storybook/addon-docs/blocks";
+ 
+import * as CheckboxStories from "./checkbox.stories";
+import checkboxCss from "./checkbox.css?raw";
+import formControlLabelCss from "../form-control-label/form-control-label.css?raw";
+
+<Meta of={CheckboxStories} />
+
+<Unstyled>
+<div className="prose">
+
+<Title />
+<Subtitle />
+<Description />
+<Primary />
+<Controls />
+<Stories includePrimary={false} />
+
+## 使用上の注意
+
+### 選択肢ラベルおよびチェックボックスのマークアップ
+
+原則として`<label>`要素を使用してチェックボックスおよび選択肢ラベルを関連付けます。これにより、チェックボックスのアクセシブルな名前として選択肢ラベルのテキストが設定されます。また、選択肢ラベルのテキスト部分がクリック範囲に含まれるようになるため、チェックボックスのクリックしやすさが向上します。
+
+```html
+<label class="dads-checkbox" data-size="sm">
+  <span class="dads-checkbox__checkbox">
+    <input class="dads-checkbox__input" type="checkbox">
+  </span>
+  <span class="dads-checkbox__label">ラベル</span>
+</label>
+```
+
+チェックボックスと選択肢ラベルを離して配置する場合、選択肢ラベルのみを`<label>`要素でマークアップし、チェックボックスに付与したIDを`for`属性に指定します。
+
+```html
+<tr>
+  <td>
+    <span class="dads-checkbox" data-size="sm">
+      <span class="dads-checkbox__checkbox">
+        <input id="article-1-checkbox" class="dads-checkbox__input" type="checkbox">
+      </span>
+    </span>
+  </td>
+  <td>
+    <label for="article-1-checkbox">記事タイトル</label>
+  </td>
+  …
+</tr>
+```
+
+### `<label>`要素が使えない場合のマークアップ
+
+状況によっては`<label>`要素が使えない場合があります。例えば、選択肢ラベルに該当するテキストがリンクである場合です。その場合、選択肢ラベルに該当するテキストを含む要素に`aria-labelledby`属性を付与し、チェックボックスのアクセシブルな名前を指定します。`<label>`要素は使用しません。
+
+```html
+<tr>
+  <td>
+    <span class="dads-checkbox" data-size="sm">
+      <span class="dads-checkbox__checkbox">
+        <input class="dads-checkbox__input" type="checkbox" aria-labelledby="article-1-title">
+      </span>
+    </span>
+  </td>
+  <td>
+    <a id="article-1-title" href>記事タイトル</a>
+  </td>
+  …
+</tr>
+```
+
+### 選択肢のグループ化
+
+複数の選択肢をもつチェックボックスは、`<fieldset>`要素で囲んでグループ化し、グループのラベルを`<legend>`要素で提供します。
+
+詳細は[フォームコントロールラベル](?path=/docs/components-フォームコントロールラベル--docs#複数のコントロールにラベルを付ける)を参照してください。
+
+## CSS
+
+### checkbox.css
+
+<Source code={checkboxCss} language="css" />
+
+### form-control-label.css
+
+<Source code={formControlLabelCss} language="css" />
+
+</div>
+</Unstyled>

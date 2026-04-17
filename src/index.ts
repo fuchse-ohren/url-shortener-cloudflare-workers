@@ -11,6 +11,13 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+const CORSHEADERS = {
+	'Access-Control-Allow-Origin': 'shorten.vulpes-red-fox.workers.dev',
+	'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+	'Access-Control-Allow-Headers': 'Content-Type',
+	Vary: 'Origin',
+};
+
 function returnError(e: unknown) {
 	var eMessage: string = '';
 
@@ -62,9 +69,28 @@ async function generateShortUrl(KV: KVNamespace): Promise<string> {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
+		const origin = request.headers.get('Origin');
 		const method: string = request.method;
 		const url: URL = new URL(request.url);
 		const body: string = await request.text();
+
+		// CORS対応
+		if (method === 'OPTIONS') {
+			return new Response(null, {
+				status: 204,
+				headers: CORSHEADERS,
+			});
+		}
+
+		// リクエストのオリジンを検証
+		if (origin && origin !== CORSHEADERS['Access-Control-Allow-Origin']) {
+			return new Response('{"statusCode": 403, "error": "オリジン検証エラー"}', {
+				status: 403,
+				headers: {
+					'Content-Type': 'text/plain',
+				},
+			});
+		}
 
 		/*
 		  短縮URL生成
@@ -76,6 +102,12 @@ export default {
 		if (method === 'POST' && url.pathname === '/api/shorten' && request.headers.get('Content-Type') === 'application/json') {
 			try {
 				const { url: longUrl } = JSON.parse(body);
+
+				// 短縮前のURLを検証(RFC3986チェック)
+				const urlCond = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+				if (!urlCond.test(longUrl)) {
+					throw new Error('無効なURLです。');
+				}
 
 				// 短縮URLを生成
 				const shortUrl = await generateShortUrl(env.KV);

@@ -1,0 +1,23 @@
+import { Controls, Description, Meta, Primary, Source, Stories, Subtitle, Title, Unstyled } from "@storybook/addon-docs/blocks";
+ 
+import * as EmergencyBannerStories from "./emergency-banner.stories";
+import emergencyBannerCss from "./emergency-banner.css?raw";
+
+<Meta of={EmergencyBannerStories} />
+
+<Unstyled>
+<div className="prose">
+
+<Title />
+<Subtitle />
+<Description />
+<Primary />
+<Controls />
+<Stories includePrimary={false} />
+
+## CSS
+
+<Source code={emergencyBannerCss} language="css" />
+
+</div>
+</Unstyled>

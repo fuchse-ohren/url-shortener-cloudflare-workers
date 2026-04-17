@@ -1,0 +1,23 @@
+import { Controls, Description, Meta, Primary, Source, Stories, Subtitle, Title, Unstyled } from "@storybook/addon-docs/blocks";
+ 
+import * as DividerStories from "./divider.stories";
+import dividerCss from "./divider.css?raw";
+
+<Meta of={DividerStories} />
+
+<Unstyled>
+<div className="prose">
+
+<Title />
+<Subtitle />
+<Description />
+<Primary />
+<Controls />
+<Stories includePrimary={false} />
+
+## CSS
+
+<Source code={dividerCss} language="css" />
+
+</div>
+</Unstyled>

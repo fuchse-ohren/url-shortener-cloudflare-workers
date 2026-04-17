@@ -1,10 +1,185 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="UTF-8" />
-		<title>URL Shortener</title>
-	</head>
-	<body>
-		testtest
-	</body>
+<!DOCTYPE html>
+<HTML>
+	<HEAD>
+		<title>QRコード生成</title>
+		<META charset="UTF-8">
+		<link rel="stylesheet" href="./global.css">
+		<link rel="stylesheet" href="./components/input-text/input-text.css">
+		<link rel="stylesheet" href="./components/textarea/textarea.css">
+		<link rel="stylesheet" href="./components/form-control-label/form-control-label.css">
+		<link rel="stylesheet" href="./components/heading/heading.css">
+		<link rel="stylesheet" href="./components/button/button.css">
+		<link rel="stylesheet" href="./components/card/card-example-2.css">
+		<style>
+			/* Animation for card addition */
+			@keyframes fadeInUp {
+			from {
+				opacity: 0;
+				transform: translateX(-20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateX(0);
+			}
+			}
+
+			.fade-in-up {
+			animation: fadeInUp 0.2s ease-out;
+			}
+		</style>
+        <script src="./qrcode.min.js"></script>
+	</HEAD>
+	<BODY>
+
+		<!-- コンテンツラッパー -->
+		<div style="width:80vw; max-width:640px; margin:auto; margin-top:2em;">
+
+			<div class="dads-heading" data-size="36">
+				<h2 class="dads-heading__heading">
+					URL 短縮
+				</h2>
+			</div>
+
+			<div class="dads-form-control-label" data-size="md" style="margin-top:2em;">
+				<label class="dads-form-control-label__label" for="with-label-input">
+					URL
+					<span class="dads-form-control-label__requirement" data-required="true">※必須</span>
+				</label>
+				<p id="with-label-support-text" class="dads-form-control-label__support-text">短縮したいURLを入力してください</p>
+				<div>
+					<span class="dads-textarea">
+					<input name="qr_input" id="with-label-input" class="dads-textarea__textarea" aria-invalid="false" aria-describedby="with-label-error-text with-label-support-text" style="width:100%;" type="text">
+					<span id="input_required_label" class="dads-input-text__error-text" style="display:none;">＊この項目は入力必須です</span>
+					<span id="input_error_label" class="dads-input-text__error-text" style="display:none;"></span>
+					</span>
+				</div>
+			</div>
+
+
+
+			<button class="dads-button" id="gen" data-size="lg" data-type="solid-fill" style="width:100%; margin-top:1em;" onclick="generateQRCode()">QRコード生成</button>
+
+			<!-- 出力欄 -->
+			<div style="margin-top:4em;">
+				<ul id="output-list" class="dads-card-example-2-list">
+
+					<li id="mock-card" style="display: none;">
+						<div class="dads-card-example-2" style="display:block;">
+							<div class="dads-card-example-2__main" style="margin-top: 0.5em; margin-bottom: 0.5em;">
+                                <div class="qrcode" style="margin:auto;"></div>
+                                <table>
+                                <tr>
+                                <td width="64px">元URL</td>
+                                <td colspan="2"><input name="input_text" class="dads-input-text__input" type="text" data-size="sm" readonly style="width:100%;" value="mock"></td>
+                                </tr>
+                                <tr>
+                                <td  width="64px">短縮URL</td>
+                                <td>
+                                <input name="output_text" class="dads-input-text__input" type="text" data-size="sm" readonly style="width:100%;" value="mock">
+                                </td>
+                                <td width="64px">
+                                <button class="dads-button copybutton" data-size="sm" data-type="outline">コピー</button>
+                                </td>
+                                </tr>
+                                </table>
+
+
+							</div>
+						</div>
+					</li>
+
+				</ul>
+			</div>
+
+		</div>
+
+	</BODY>
+
+    <script>
+        function generateQRCode() {
+        	// エラークリア
+            document.getElementById("input_error_label").style.display = "none";
+        	document.getElementById("input_required_label").style.display = "none";
+        	document.getElementById("with-label-input").ariaInvalid = "false";
+
+            const text = document.querySelector("#with-label-input").value;
+            const size = 256;
+            //const foreground = document.getElementById("foreground").value;
+            //const background = document.getElementById("background").value;
+            const foreground = "#000000";
+            const background = "#ffffff";
+
+            // 空文字チェック
+            if (text.trim() === "") {
+                document.getElementById("input_required_label").style.display = "block";
+                document.getElementById("with-label-input").ariaInvalid = "true";
+                return;
+            }
+
+            // URLを短縮
+            fetch('/api/shorten', {
+                method: 'POST',
+                body: JSON.stringify({ url: text }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+            	if (response.status !== 200) {
+                    return response.json().then(error => {
+                  		document.getElementById("input_error_label").textContent = `${error.error}`;
+                  		document.getElementById("input_error_label").style.display = "block";
+                        throw new Error(`${response.status} ${response.statusText} ${error.error}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                var shortUrl = data.shortUrl;
+                // 新しいカードを準備
+                const output_list = document.getElementById("output-list");
+                const mock_card = document.getElementById("mock-card");
+
+                const new_card = mock_card.cloneNode(true);
+                new_card.style.display = "block";
+                new_card.classList.add("fade-in-up");
+
+                // カードにQRコードとテキストを設定
+                const inputTextField = new_card.querySelector("input[name='input_text']");
+                const outputTextField = new_card.querySelector("input[name='output_text']");
+                const copyButton = new_card.querySelector(".copybutton");
+                inputTextField.value = text;
+                outputTextField.value = shortUrl;
+                copyButton.addEventListener("click", () => {
+                    outputTextField.select();
+                    document.execCommand("copy");
+                });
+
+                const qrCodeContainer = new_card.querySelector(".qrcode");
+                qrCodeContainer.innerHTML = "";
+                if (text.trim() !== "") {
+                    new QRCode(qrCodeContainer, {
+                        text: shortUrl,
+                        width: size,
+                        height: size,
+                        colorDark: foreground,
+                        colorLight: background
+                    });
+                }
+
+                // カードをリストの先頭に追加
+                output_list.insertBefore(new_card, output_list.firstChild);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+
+        // 初回アクセス時、#https://exmaple.com の形でURLハッシュの指定があったときにフォームを自動入力する
+        const initialParam = window.location.hash.slice(1);
+        if (initialParam) {
+            document.querySelector("#with-label-input").value = initialParam;
+            generateQRCode();
+        }
+    </script>
 </html>
