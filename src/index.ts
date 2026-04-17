@@ -12,7 +12,7 @@
  */
 
 const CORSHEADERS = {
-	'Access-Control-Allow-Origin': 'shorten.vulpes-red-fox.workers.dev',
+	'Access-Control-Allow-Origin': 's.lunatic.red',
 	'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 	'Access-Control-Allow-Headers': 'Content-Type',
 	Vary: 'Origin',
