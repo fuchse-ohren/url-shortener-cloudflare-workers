@@ -1,0 +1,9 @@
+/*
+Content-Security-Policy: default-src 'self'; script-src 'strict-dynamic' 'sha256-o/Iyk6TGuJdR/oRG/H9puSiCgpALs6R5uzyuYOskk6E=' 'sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==' http: https: 'unsafe-inline'; 	base-uri  'none'; 	style-src 'self' 'unsafe-inline';
+Cache-Control: no-cache, no-store
+Strict-Transport-Security: max-age=31536000;
+Referrer-Policy: no-referrer
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+fox: cute

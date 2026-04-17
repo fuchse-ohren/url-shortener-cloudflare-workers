@@ -18,6 +18,20 @@ const CORSHEADERS = {
 	Vary: 'Origin',
 };
 
+function secureResponse(status: number, headers: Record<string, string>, body: string): Response {
+	headers['Strict-Transport-Security'] = 'max-age=31536000;';
+	headers['X-Content-Type-Options'] = 'nosniff';
+	headers['X-Frame-Options'] = 'DENY';
+	headers['Referrer-Policy'] = 'no-referrer';
+	headers['Cache-Control'] = 'no-cache, no-store';
+	headers['X-XSS-Protection'] = '1; mode=block';
+	headers['fox'] = 'cute';
+	return new Response(body, {
+		status,
+		headers,
+	});
+}
+
 function returnError(e: unknown) {
 	var eMessage: string = '';
 
@@ -27,12 +41,11 @@ function returnError(e: unknown) {
 		eMessage = 'エラーが発生しました';
 	}
 
-	return new Response(`{"statusCode": 400, "error": "${eMessage}"}`, {
-		status: 400,
-		headers: {
-			'Content-Type': 'application/json',
-		},
-	});
+	return secureResponse(
+		400,
+		{'Content-Type': 'application/json'},
+		`{"statusCode": 400, "error": "${eMessage}"}`
+	);
 }
 
 function generateShortUrlKouho(): string {
@@ -69,27 +82,30 @@ async function generateShortUrl(KV: KVNamespace): Promise<string> {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const origin = new URL(request.headers.get('Origin') || 'http://127.0.0.1:8787');
+		const origin = request.headers.get('Origin')?.replace(/^https?:\/\//, '').split('/')[0];
 		const method: string = request.method;
 		const url: URL = new URL(request.url);
 		const body: string = await request.text();
 
+		console.log(origin);
+		console.log(CORSHEADERS['Access-Control-Allow-Origin']);
+
 		// CORS対応
 		if (method === 'OPTIONS') {
-			return new Response(null, {
-				status: 204,
-				headers: CORSHEADERS,
-			});
+			return secureResponse(
+				204,
+				CORSHEADERS,
+				null
+			);
 		}
 
 		// リクエストのオリジンを検証
-		if ( method === 'POST' && origin && origin.host !== CORSHEADERS['Access-Control-Allow-Origin']) {
-			return new Response('{"statusCode": 403, "error": "オリジン検証エラー"}', {
-				status: 403,
-				headers: {
-					'Content-Type': 'text/plain',
-				},
-			});
+		if (method === 'POST' && ( origin !== CORSHEADERS['Access-Control-Allow-Origin'] || origin === undefined )) {
+			return secureResponse(
+				403,
+				{'Content-Type': 'application/json'},
+				'{"statusCode": 403, "error": "オリジン検証エラー"}'
+			);
 		}
 
 		/*
@@ -130,12 +146,11 @@ export default {
 				await env.KV.put(shortUrl, longUrl);
 
 				// 短縮URLを返す
-				return new Response(`{"statusCode": 200, "shortUrl": "${url.origin}/${shortUrl}"}`, {
-					status: 200,
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				});
+				return secureResponse(
+					200,
+					{'Content-Type': 'application/json'},
+					`{"statusCode": 200, "shortUrl": "${url.origin}/${shortUrl}"}`
+				);
 			} catch (e) {
 				return returnError(e);
 			}
@@ -153,19 +168,16 @@ export default {
 				const longUrl = await env.KV.get(shortUrl);
 
 				if (longUrl) {
-					return new Response(null, {
-						status: 302,
-						headers: {
-							Location: longUrl,
-						},
-					});
+					return secureResponse(
+						302,
+						{'Location': longUrl},
+						''
+					);
+
 				} else {
-					return new Response(null, {
-						status: 404,
-						headers: {
-							'Content-Type': 'text/plain',
-						},
-					});
+					return secureResponse(404, {
+						'Content-Type': 'text/plain',
+					}, '');
 				}
 			} catch (e) {
 				return returnError(e);
@@ -173,11 +185,8 @@ export default {
 		}
 
 		// どのAPIリクエストにも合致しなかった場合
-		return new Response('{"statusCode": 400, "error": "Bad Request"}', {
-			status: 400,
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
+		return secureResponse(400, {
+			'Content-Type': 'application/json',
+		}, '{"statusCode": 400, "error": "Bad Request"}');
 	},
 } satisfies ExportedHandler<Env>;
