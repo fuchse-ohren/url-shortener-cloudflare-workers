@@ -1,0 +1,33 @@
+/* Animation for card addition */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateX(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+.fade-in-up {
+	animation: fadeInUp 0.2s ease-out;
+}
+
+/* PC */
+.contentWrapper {
+	width: 80vw;
+	max-width: 640px;
+	margin: auto;
+	margin-top: 2em;
+}
+
+/* 携帯電話 */
+@media screen and (max-width: 1024px) {
+	.contentWrapper {
+		width: 95vw;
+		max-width: 95vw;
+		margin: auto;
+		margin-top: 2em;
+	}
+}
