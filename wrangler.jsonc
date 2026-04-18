@@ -15,6 +15,16 @@
 	},
 	"upload_source_maps": true,
 	"compatibility_flags": ["nodejs_compat"],
-	//"kv_namespaces": [{ "binding": "KV", "id": "<SET_YOUR_KV_ID>" }],
+	"ratelimits": [
+		{
+			"name": "DEFAULT",
+			"namespace_id": "1001",
+			"simple": {
+				"limit": 60,
+				"period": 60,
+			},
+		},
+	],
+	"kv_namespaces": [{ "binding": "KV", "id": "<SET_YOUR_KV_ID>" }],
 	//"vars": {  "CORS_DOMAIN": "<SET_YOUR_DOMAIN>" }
 }

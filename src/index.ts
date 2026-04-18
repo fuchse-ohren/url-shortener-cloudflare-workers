@@ -41,11 +41,7 @@ function returnError(e: unknown) {
 		eMessage = 'エラーが発生しました';
 	}
 
-	return secureResponse(
-		400,
-		{'Content-Type': 'application/json'},
-		`{"statusCode": 400, "error": "${eMessage}"}`
-	);
+	return secureResponse(400, { 'Content-Type': 'application/json' }, `{"statusCode": 400, "error": "${eMessage}"}`);
 }
 
 function generateShortUrlKouho(): string {
@@ -82,30 +78,22 @@ async function generateShortUrl(KV: KVNamespace): Promise<string> {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const origin = request.headers.get('Origin')?.replace(/^https?:\/\//, '').split('/')[0];
+		const origin = request.headers
+			.get('Origin')
+			?.replace(/^https?:\/\//, '')
+			.split('/')[0];
 		const method: string = request.method;
 		const url: URL = new URL(request.url);
 		const body: string = await request.text();
 
-		console.log(origin);
-		console.log(CORSHEADERS['Access-Control-Allow-Origin']);
-
 		// CORS対応
 		if (method === 'OPTIONS') {
-			return secureResponse(
-				204,
-				CORSHEADERS,
-				null
-			);
+			return secureResponse(204, CORSHEADERS, null);
 		}
 
 		// リクエストのオリジンを検証
-		if (method === 'POST' && ( origin !== CORSHEADERS['Access-Control-Allow-Origin'] || origin === undefined )) {
-			return secureResponse(
-				403,
-				{'Content-Type': 'application/json'},
-				'{"statusCode": 403, "error": "オリジン検証エラー"}'
-			);
+		if (method === 'POST' && (origin !== CORSHEADERS['Access-Control-Allow-Origin'] || origin === undefined)) {
+			return secureResponse(403, { 'Content-Type': 'application/json' }, '{"statusCode": 403, "error": "オリジン検証エラー"}');
 		}
 
 		/*
@@ -146,11 +134,7 @@ export default {
 				await env.KV.put(shortUrl, longUrl);
 
 				// 短縮URLを返す
-				return secureResponse(
-					200,
-					{'Content-Type': 'application/json'},
-					`{"statusCode": 200, "shortUrl": "${url.origin}/${shortUrl}"}`
-				);
+				return secureResponse(200, { 'Content-Type': 'application/json' }, `{"statusCode": 200, "shortUrl": "${url.origin}/${shortUrl}"}`);
 			} catch (e) {
 				return returnError(e);
 			}
@@ -168,16 +152,15 @@ export default {
 				const longUrl = await env.KV.get(shortUrl);
 
 				if (longUrl) {
-					return secureResponse(
-						302,
-						{'Location': longUrl},
-						''
-					);
-
+					return secureResponse(302, { Location: longUrl }, '');
 				} else {
-					return secureResponse(404, {
-						'Content-Type': 'text/plain',
-					}, '');
+					return secureResponse(
+						404,
+						{
+							'Content-Type': 'text/plain',
+						},
+						'',
+					);
 				}
 			} catch (e) {
 				return returnError(e);
@@ -185,8 +168,12 @@ export default {
 		}
 
 		// どのAPIリクエストにも合致しなかった場合
-		return secureResponse(400, {
-			'Content-Type': 'application/json',
-		}, '{"statusCode": 400, "error": "Bad Request"}');
+		return secureResponse(
+			400,
+			{
+				'Content-Type': 'application/json',
+			},
+			'{"statusCode": 400, "error": "Bad Request"}',
+		);
 	},
 } satisfies ExportedHandler<Env>;
