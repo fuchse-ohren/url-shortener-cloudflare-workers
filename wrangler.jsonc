@@ -25,6 +25,6 @@
 			},
 		},
 	],
-	//"kv_namespaces": [{ "binding": "KV", "id": "<SET_YOUR_KV_ID>" }],
+	"kv_namespaces": [{ "binding": "KV" }],
 	//"vars": {  "CORS_DOMAIN": "<SET_YOUR_DOMAIN>" }
 }
