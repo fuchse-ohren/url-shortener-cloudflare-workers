@@ -31,10 +31,10 @@ function returnError(e: unknown) {
 	return secureResponse(400, { 'Content-Type': 'application/json' }, `{"statusCode": 400, "error": "${eMessage}"}`);
 }
 
-function generateShortUrlKouho(): string {
-	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+function generateShortUrlKouho(length: number): string {
+	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.!*)(';
 	let result = '';
-	for (let i = 0; i < 6; i++) {
+	for (let i = 0; i < length; i++) {
 		result += chars.charAt(Math.floor(Math.random() * chars.length));
 	}
 
@@ -43,20 +43,22 @@ function generateShortUrlKouho(): string {
 
 async function generateShortUrl(KV: KVNamespace): Promise<string> {
 	var result: string = '';
-	var retryLimit = 3;
+	var retryCount = 0;
+	const retryLimit = 6;
+	const minimumLength = 1;
 
 	// 衝突しない短縮文字列を探索
-	while (1 && retryLimit > 0) {
-		retryLimit -= 1;
-		const shortUrl = generateShortUrlKouho();
+	while (1 && retryCount < retryLimit) {
+		const shortUrl = generateShortUrlKouho(retryCount + minimumLength);
 		if (!(await KV.get(shortUrl))) {
 			result = shortUrl;
 			break;
 		}
+		retryCount += 1;
 	}
 
 	// 衝突回数が上限に達した場合、エラーを投げる
-	if (retryLimit === 0) {
+	if (retryLimit === retryCount) {
 		throw new Error('短縮URLの生成に失敗しました。\\n衝突エラー');
 	}
 
